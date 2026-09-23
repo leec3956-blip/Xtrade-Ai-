@@ -15,21 +15,13 @@ jobs:
 
     - name: Unzip Project Files
       run: |
-        # Ekstrak fail zip
+        # Ekstrak fail zip terus ke direktori utama
         unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
         
-        # Cari di mana fail gradlew berada dan gerakkan semua fail dari folder itu ke folder utama
-        GRADLEW_PATH=$(find . -name "gradlew" -not -path "./.*")
-        if [ ! -z "$GRADLEW_PATH" ]; then
-          FOLDER_PATH=$(dirname "$GRADLEW_PATH")
-          echo "Menemui fail projek di dalam folder: $FOLDER_PATH"
-          if [ "$FOLDER_PATH" != "." ]; then
-            mv $FOLDER_PATH/* ./ 2>/dev/null || true
-            mv $FOLDER_PATH/.* ./ 2>/dev/null || true
-          fi
-        else
-          echo "Ralat: Fail gradlew tidak dijumpai di dalam fail zip!"
-          exit 1
+        # Jika fail terekstrak ke dalam subfolder, gerakkan ia ke folder utama
+        if [ -d "XtradeAi_APK_BUILD_READY" ]; then
+          mv XtradeAi_APK_BUILD_READY/* ./ 2>/dev/null || true
+          mv XtradeAi_APK_BUILD_READY/.* ./ 2>/dev/null || true
         fi
 
     - name: Set up JDK 17
@@ -37,6 +29,11 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
+
+    - name: Generate Missing Gradle Wrapper
+      run: |
+        # Menjana fail gradlew yang hilang secara automatik menggunakan arahan gradle terbina
+        gradle wrapper
 
     - name: Make gradlew executable
       run: chmod +x ./gradlew
@@ -48,5 +45,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: XtradeAi-Aplikasi-APK
-        path: |
-          **/build/outputs/apk/debug/*.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
+        
