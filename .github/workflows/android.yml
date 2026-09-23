@@ -13,13 +13,30 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Create Web Zip Package
-        run: |
-          zip -r web-app.zip . -x "*.git*"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      - name: Upload Artifact
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Cordova & Build APK
+        run: |
+          npm install -g cordova
+          cordova create myApp com.xtrade.ai XtradeAI
+          cd myApp
+          rm -rf www/*
+          cp -r ../app/src/main/assets/* www/ || cp -r ../* www/ || true
+          cordova platform add android
+          cordova build android --debug
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: web-app-package
-          path: web-app.zip
+          name: XtradeAI-app-debug
+          path: myApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
           
