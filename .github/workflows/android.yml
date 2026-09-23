@@ -1,3 +1,4 @@
+
 name: Build Android APK From Zip
 
 on:
@@ -15,9 +16,9 @@ jobs:
 
     - name: Unzip Project Files
       run: |
-        unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
-        if [ -d "XtradeAi_APK_BUILD_READY" ]; then
-          mv XtradeAi_APK_BUILD_READY/* ./
+        unzip -o .github/workflows/Xtrade_APK_BUILD_READY.zip -d ./
+        if [ -d "Xtrade_APK_BUILD_READY" ]; then
+          mv Xtrade_APK_BUILD_READY/* ./
         fi
 
     - name: Set up JDK 17
@@ -37,4 +38,3 @@ jobs:
       with:
         name: XtradeAi-Aplikasi-APK
         path: app/build/outputs/apk/debug/app-debug.apk
-        
