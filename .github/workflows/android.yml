@@ -13,24 +13,47 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Generate Gradle Wrapper & Build APK
+      - name: Install Cordova & Build APK
         run: |
-          gradle wrapper
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          npm install -g cordova
+          
+          # Cipta projek dengan nama asal "Xtrade Ai"
+          cordova create myApp com.xtrade.ai "Xtrade Ai"
+          cd myApp
+          rm -rf www/*
+          
+          # Salin fail aset asal (termasuk dashboard.html)
+          cp -r ../app/src/main/assets/* www/ || true
+          
+          # Pastikan dashboard.html dijadikan index.html
+          if [ -f www/dashboard.html ]; then
+            cp www/dashboard.html www/index.html
+          fi
+
+          # Cari dan salin fail icon asal jika ada
+          mkdir -p res/icon/android/
+          ICON_FILE=$(find ../app/src/main/res/ -name "ic_launcher*.png" | head -n 1)
+          if [ -n "$ICON_FILE" ]; then
+            cp "$ICON_FILE" res/icon/android/icon.png
+            sed -i 's|</widget>|<icon src="res/icon/android/icon.png" /></widget>|' config.xml
+          fi
+
+          cordova platform add android
+          cordova build android --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: XtradeAI-app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
-          
+          name: XtradeAi-app-debug
+          path: myApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
