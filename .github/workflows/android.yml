@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -36,6 +36,13 @@ jobs:
           if [ -f gradlew ]; then
             ./gradlew assembleDebug --stacktrace
           else
-            echo "No gradlew found, process completed safely."
+            echo "No gradlew found!"
+            exit 1
           fi
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
           
