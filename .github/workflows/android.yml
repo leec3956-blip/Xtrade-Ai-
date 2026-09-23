@@ -1,39 +1,15 @@
-name: Build Android APK From Zip
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Unzip Project Files
-      run: |
-        unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
-        mv Xtrade_APK_BUILD_READY/* ./ 2>/dev/null || true
-        mv Xtrade_APK_BUILD_READY/.* ./ 2>/dev/null || true
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
-
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: XtradeAi-cTrader-APK
-        path: |
-          **/build/outputs/apk/debug/*.apk
+<!-- === KODE BARUSAN UNTUK CTRADER === -->
+<div style="background-color: #1a1d26; border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <!-- Indikator Status (Abu-abu / Belum Connect) -->
+    <span style="height: 10px; width: 10px; background-color: #888; border-radius: 50%; display: inline-block;"></span>
+    <div>
+      <h4 style="color: #fff; margin: 0; font-size: 14px;">cTrader</h4>
+      <p style="color: #aaa; margin: 0; font-size: 11px;">Belum Tersambung</p>
+    </div>
+  </div>
+  <!-- Tombol Login -->
+  <button type="button" style="background-color: #00e676; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer;">
+    Login cTrader
+  </button>
+</div>
