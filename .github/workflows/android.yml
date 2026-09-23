@@ -1,60 +1,254 @@
-name: Build Android APK From Zip
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Unzip Project Files
-      run: |
-        # Sandarkan fail dashboard.html baharu anda ke folder sementara
-        mkdir -p /tmp/backup
-        if [ -f "app/src/main/assets/dashboard.html" ]; then
-          cp app/src/main/assets/dashboard.html /tmp/backup/dashboard.html
-        fi
-
-        # Ekstrak fail zip utama
-        unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xtrade Ai Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 15px;
+        }
+        h1 { font-size: 24px; margin: 0; color: #ffffff; }
+        .pair-subtitle { font-size: 12px; color: #64748b; }
+        .status-badge {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #10b981;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .circle-progress-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        .circle-overlay {
+            position: absolute;
+            text-align: center;
+        }
+        .circle-overlay .status-text { font-size: 28px; font-weight: bold; color: #e2e8f0; }
+        .circle-overlay .percentage { font-size: 14px; color: #64748b; }
         
-        # Pindahkan fail keluar jika tersimpan di dalam subfolder
-        GRADLEW_PATH=$(find . -name "gradlew" -not -path "./.*")
-        if [ ! -z "$GRADLEW_PATH" ]; then
-          FOLDER_PATH=$(dirname "$GRADLEW_PATH")
-          if [ "$FOLDER_PATH" != "." ]; then
-            mv $FOLDER_PATH/* ./ 2>/dev/null || true
-            mv $FOLDER_PATH/.* ./ 2>/dev/null || true
-          fi
-        fi
+        .section-title {
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            color: #e2e8f0;
+            border-left: 3px solid #eab308;
+            padding-left: 8px;
+            margin: 25px 0 15px 0;
+            text-align: left;
+        }
+        .card-list {
+            background-color: #111827;
+            border-radius: 12px;
+            padding: 5px 15px;
+            border: 1px solid #1f2937;
+        }
+        .card-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #1f2937;
+            font-size: 14px;
+        }
+        .card-item:last-child { border-bottom: none; }
+        .checkbox-mock {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: inline-block;
+        }
+        .checkbox-checked {
+            background-color: #eab308;
+            border: 1px solid #eab308;
+            position: relative;
+        }
+        .checkbox-checked::after {
+            content: '✓';
+            color: #000;
+            font-size: 11px;
+            position: absolute;
+            top: -1px;
+            left: 3px;
+            font-weight: bold;
+        }
+        .checkbox-empty { border: 1px solid #4b5563; }
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .price-box {
+            background-color: #111827;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #1f2937;
+        }
+        .price-label { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .price-value { font-size: 16px; font-weight: bold; color: #10b981; }
+        
+        .full-width-box {
+            background-color: #111827;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #1f2937;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .btn {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-override { background-color: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; }
+        .btn-force { background-color: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid #eab308; }
+        
+        /* Butang Baru Khas cTrader */
+        .btn-ctrader-container {
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+        .btn-ctrader {
+            width: 100%;
+            background-color: #1fc1c4;
+            color: #ffffff;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0px 4px 15px rgba(31, 193, 196, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
 
-        # Masukkan semula fail dashboard.html cTrader anda yang disandarkan tadi
-        mkdir -p app/src/main/assets
-        if [ -f "/tmp/backup/dashboard.html" ]; then
-          cp /tmp/backup/dashboard.html app/src/main/assets/dashboard.html
-        fi
+    <div class="header-container">
+        <div>
+            <h1>EURUSD</h1>
+            <div class="pair-subtitle">Xtrade Ai • MT5 Demo</div>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span>MT5 Tersambung</span>
+        </div>
+    </div>
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+    <div class="circle-progress-container">
+        <svg width="160" height="160">
+            <circle cx="80" cy="80" r="70" stroke="#1f2937" stroke-width="8" fill="transparent" />
+            <circle cx="80" cy="80" r="70" stroke="#eab308" stroke-width="8" fill="transparent" 
+                    stroke-dasharray="440" stroke-dashoffset="260" stroke-linecap="round" />
+        </svg>
+        <div class="circle-overlay">
+            <div class="status-text">WAIT</div>
+            <div class="percentage">41%</div>
+        </div>
+    </div>
 
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
+    <p style="color: #9ca3af; font-size: 13px; text-align: center; margin-bottom: 25px;">
+        <strong>2/4 syarat dipenuhi.</strong> Masih menunggu: <span style="color: #eab308;">M15 Bullish Engulfing tutup, RSI reclaim paras 30.</span>
+    </p>
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+    <div class="section-title">AI Brain Thought Process</div>
+    <div class="card-list">
+        <div class="card-item">
+            <span class="checkbox-mock checkbox-checked"></span>
+            <span>Trend H4 = Uptrend</span>
+        </div>
+        <div class="card-item">
+            <span class="checkbox-mock checkbox-checked"></span>
+            <span>Harga dalam zon Demand</span>
+        </div>
+        <div class="card-item">
+            <span class="checkbox-mock checkbox-empty"></span>
+            <span style="color: #6b7280;">M15 Bullish Engulfing tutup</span>
+        </div>
+        <div class="card-item">
+            <span class="checkbox-mock checkbox-empty"></span>
+            <span style="color: #6b7280;">RSI reclaim paras 30</span>
+        </div>
+    </div>
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: XtradeAi-cTrader-APK
-        path: |
-          **/build/outputs/apk/debug/*.apk
+    <div class="section-title">PARAS HARGA</div>
+    <div class="price-grid">
+        <div class="price-box">
+            <div class="price-label">Entry</div>
+            <div class="price-value">-</div>
+        </div>
+        <div class="price-box" style="border-color: #ef4444;">
+            <div class="price-label">Stop Loss</div>
+            <div class="price-value" style="color: #ef4444;">-</div>
+        </div>
+        <div class="price-box">
+            <div class="price-label">TP1</div>
+            <div class="price-value">-</div>
+        </div>
+    </div>
+
+    <div class="full-width-box">
+        <span style="color: #64748b; text-transform: uppercase; font-size: 10px; font-weight: bold;">Invalidation Price</span>
+        <span style="font-weight: bold;">1.09980</span>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-override">➔ OVERRIDE TRADE</button>
+        <button class="btn btn-force">ⓘ FORCE WAIT</button>
+    </div>
+
+    <!-- BUTANG BARU DI BAHAGIAN BAWAH KHAS UNTUK SAMBUNG CTRADER -->
+    <div class="btn-ctrader-container">
+        <button class="btn-ctrader" onclick="sambungKeCTrader()">➔ SAMBUNG KE CTRADER</button>
+    </div>
+
+    <script>
+        function sambungKeCTrader() {
+            const clientId = "41120";
+            const redirectUri = "http://localhost/";
+            const authUrl = `https://ctrader.com{clientId}&redirect_uri=${redirectUri}&scope=trading,accounts&response_type=code`;
+            window.location.href = authUrl;
+        }
+    </script>
+</body>
+</html>
+
