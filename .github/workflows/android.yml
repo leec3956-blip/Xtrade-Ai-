@@ -15,13 +15,29 @@ jobs:
 
     - name: Unzip Project Files
       run: |
-        # Ekstrak fail zip terus ke direktori utama
+        # Sandarkan fail dashboard.html baharu anda ke folder sementara
+        mkdir -p /tmp/backup
+        if [ -f "app/src/main/assets/dashboard.html" ]; then
+          cp app/src/main/assets/dashboard.html /tmp/backup/dashboard.html
+        fi
+
+        # Ekstrak fail zip utama
         unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
         
-        # Jika fail terekstrak ke dalam subfolder, gerakkan ia ke folder utama
-        if [ -d "XtradeAi_APK_BUILD_READY" ]; then
-          mv XtradeAi_APK_BUILD_READY/* ./ 2>/dev/null || true
-          mv XtradeAi_APK_BUILD_READY/.* ./ 2>/dev/null || true
+        # Pindahkan fail keluar jika tersimpan di dalam subfolder
+        GRADLEW_PATH=$(find . -name "gradlew" -not -path "./.*")
+        if [ ! -z "$GRADLEW_PATH" ]; then
+          FOLDER_PATH=$(dirname "$GRADLEW_PATH")
+          if [ "$FOLDER_PATH" != "." ]; then
+            mv $FOLDER_PATH/* ./ 2>/dev/null || true
+            mv $FOLDER_PATH/.* ./ 2>/dev/null || true
+          fi
+        fi
+
+        # Masukkan semula fail dashboard.html cTrader anda yang disandarkan tadi
+        mkdir -p app/src/main/assets
+        if [ -f "/tmp/backup/dashboard.html" ]; then
+          cp /tmp/backup/dashboard.html app/src/main/assets/dashboard.html
         fi
 
     - name: Set up JDK 17
@@ -29,11 +45,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-
-    - name: Generate Missing Gradle Wrapper
-      run: |
-        # Menjana fail gradlew yang hilang secara automatik menggunakan arahan gradle terbina
-        gradle wrapper
 
     - name: Make gradlew executable
       run: chmod +x ./gradlew
@@ -44,6 +55,6 @@ jobs:
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: XtradeAi-Aplikasi-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
-        
+        name: XtradeAi-cTrader-APK
+        path: |
+          **/build/outputs/apk/debug/*.apk
