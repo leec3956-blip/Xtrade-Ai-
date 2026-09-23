@@ -16,8 +16,8 @@ jobs:
     - name: Unzip Project Files
       run: |
         unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
-        mv XtradeAi_APK_BUILD_READY/* ./ 2>/dev/null || true
-        mv XtradeAi_APK_BUILD_READY/.* ./ 2>/dev/null || true
+        mv Xtrade_APK_BUILD_READY/* ./ 2>/dev/null || true
+        mv Xtrade_APK_BUILD_READY/.* ./ 2>/dev/null || true
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
