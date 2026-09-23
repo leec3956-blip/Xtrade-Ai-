@@ -15,29 +15,9 @@ jobs:
 
     - name: Unzip Project Files
       run: |
-        # 1. Ekstrak fail zip projek utama
         unzip -o .github/workflows/XtradeAi_APK_BUILD_READY.zip -d ./
-        
-        # 2. Pindahkan fail keluar jika tersimpan di dalam subfolder
-        GRADLEW_PATH=\$(find . -name "gradlew" -not -path "./.*")
-        if [ ! -z "\$GRADLEW_PATH" ]; then
-          FOLDER_PATH=(dirname "GRADLEW_PATH")
-          if [ "\$FOLDER_PATH" != "." ]; then
-            mv \$FOLDER_PATH/* ./ 2>/dev/null || true
-            mv \$FOLDER_PATH/.* ./ 2>/dev/null || true
-          fi
-        fi
-
-        # 3. Suntik butang SAMBUNG KE CTRADER ke dalam dashboard.html secara automatik
-        TARGET_FILE="app/src/main/assets/dashboard.html"
-        if [ -f "\$TARGET_FILE" ]; then
-          # Memasukkan gaya reka bentuk butang cTrader sebelum tag </style>
-          sed -i '/<\/style>/i \        .btn-ctrader-container { margin-top: 20px; margin-bottom: 30px; }\n        .btn-ctrader { width: 100%; background-color: #1fc1c4; color: #ffffff; padding: 16px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; border: none; box-shadow: 0px 4px 15px rgba(31, 193, 196, 0.3); text-transform: uppercase; letter-spacing: 1px; }' "\$TARGET_FILE"
-          
-          # Memasukkan struktur butang cTrader sebelum tag </body>
-          sed -i '/<\/body>/i \    <div class="btn-ctrader-container">\n        <button class="btn-ctrader" onclick="sambungKeCTrader()">➔ SAMBUNG KE CTRADER</button>\n    </div>\n    <script>\n        function sambungKeCTrader() {\n            const clientId = "41120";\n            const redirectUri = "http://localhost/";\n            const authUrl = `https://ctrader.com{clientId}&redirect_uri=${redirectUri}&scope=trading,accounts&response_type=code`;\n            window.location.href = authUrl;\n        }\n    </script>' "\$TARGET_FILE"
-          echo "Butang cTrader berjaya disuntik ke dalam fail APK!"
-        fi
+        mv XtradeAi_APK_BUILD_READY/* ./ 2>/dev/null || true
+        mv XtradeAi_APK_BUILD_READY/.* ./ 2>/dev/null || true
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -57,4 +37,3 @@ jobs:
         name: XtradeAi-cTrader-APK
         path: |
           **/build/outputs/apk/debug/*.apk
-          
