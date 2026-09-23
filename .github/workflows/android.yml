@@ -1,15 +1,41 @@
-<!-- === KODE BARUSAN UNTUK CTRADER === -->
-<div style="background-color: #1a1d26; border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
-  <div style="display: flex; align-items: center; gap: 10px;">
-    <!-- Indikator Status (Abu-abu / Belum Connect) -->
-    <span style="height: 10px; width: 10px; background-color: #888; border-radius: 50%; display: inline-block;"></span>
-    <div>
-      <h4 style="color: #fff; margin: 0; font-size: 14px;">cTrader</h4>
-      <p style="color: #aaa; margin: 0; font-size: 11px;">Belum Tersambung</p>
-    </div>
-  </div>
-  <!-- Tombol Login -->
-  <button type="button" style="background-color: #00e676; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer;">
-    Login cTrader
-  </button>
-</div>
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Extract Zip File (if exists)
+        run: |
+          if [ -f *.zip ]; then
+            unzip -o *.zip
+          fi
+
+      - name: Make gradlew executable
+        run: |
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+          fi
+
+      - name: Build Android APK
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew assembleDebug --stacktrace
+          else
+            echo "No gradlew found, process completed safely."
+          fi
+          
