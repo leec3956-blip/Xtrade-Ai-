@@ -13,36 +13,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Extract Zip File (if exists)
+      - name: Create Web Zip Package
         run: |
-          if [ -f *.zip ]; then
-            unzip -o *.zip
-          fi
+          zip -r web-app.zip . -x "*.git*"
 
-      - name: Make gradlew executable
-        run: |
-          if [ -f gradlew ]; then
-            chmod +x gradlew
-          fi
-
-      - name: Build Android APK
-        run: |
-          if [ -f gradlew ]; then
-            ./gradlew assembleDebug --stacktrace
-          else
-            echo "No gradlew found!"
-            exit 1
-          fi
-
-      - name: Upload APK Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: '**/*.apk'
+          name: web-app-package
+          path: web-app.zip
           
