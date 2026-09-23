@@ -140,9 +140,9 @@
         .btn-override { background-color: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; }
         .btn-force { background-color: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid #eab308; }
         
-        /* Butang Baru Khas cTrader */
+        /* Gaya Butang Khas cTrader di Bahagian Bawah */
         .btn-ctrader-container {
-            margin-top: 15px;
+            margin-top: 20px;
             margin-bottom: 30px;
         }
         .btn-ctrader {
@@ -251,4 +251,3 @@
     </script>
 </body>
 </html>
-
